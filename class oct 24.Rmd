@@ -1,0 +1,48 @@
+---
+title: "Class Oct 24"
+author: "Keeley MacAfee"
+date: "10/24/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(readxl)
+library(stringr)
+library(fs)
+```
+
+```{r, echo=FALSE, message=FALSE, cache=TRUE}
+download.file(url = "https://www.fec.gov/files/bulk-downloads/1990/indiv90.zip", 
+              destfile = "indiv90.zip")
+
+unzip("indiv90.zip")
+
+indiv <- read_delim("itcont.txt", delim = "|", col_names = FALSE, escape_double = FALSE)
+
+download.file(url = "https://www.fec.gov/files/bulk-downloads/1990/cm90.zip", 
+              destfile = "cm90.zip")
+
+unzip("cm90.zip")
+
+committee <- read_delim("cm.txt", delim = "|", col_names = FALSE, escape_double = FALSE)
+```
+
+* The number of observations is X.
+* The number of observations is `r nrow(indiv)`.
+
+```{r}
+all <- left_join(indiv, committee, by = "X1")
+
+harvard_donors <- all %>%
+  select(X8.x, X12.x, X15.x, X2.y) %>%
+  rename(name = X8.x,
+         employer = X12.x,
+         amount = X15.x,
+         committee = X2.y) %>%
+  filter(str_detect(employer, pattern = "HARVARD")) %>%
+  arrange(desc(amount))
+```
+
